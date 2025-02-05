@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Profil - BlockBazaar</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">BlockBazaar</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="buy.html">Kaufen</a></li>
+          <li class="nav-item"><a class="nav-link" href="sell.html">Verkaufen</a></li>
+          <li class="nav-item"><a class="nav-link" href="profile.html">Profil</a></li>
+          <li class="nav-item"><button id="connectWalletBtn" class="btn btn-primary">Wallet verbinden</button></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  
+  <section id="profile" class="py-5">
+    <div class="container">
+      <h2 class="mb-4">Mein Profil</h2>
+      <div class="row">
+        <div class="col-md-6">
+          <h4>Verkäufe</h4>
+          <ul id="salesList" class="list-group"></ul>
+        </div>
+        <div class="col-md-6">
+          <h4>Käufe</h4>
+          <ul id="purchasesList" class="list-group"></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+  <script src="script.js"></script>
+</body>
+</html>
