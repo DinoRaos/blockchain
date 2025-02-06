@@ -1,0 +1,27 @@
+body {
+    padding-top: 50px; /* Damit Inhalte nicht hinter der Navbar verschwinden */
+  }
+  
+  @media (max-width: 768px) {
+    body {
+      padding-top: 50px; /* Mehr Platz für kleinere Screens */
+    }
+  }
+
+#addressDisplay {
+  background: rgba(222, 222, 222, 0.1);
+  border-radius: 20px;
+  padding: 8px 15px;
+  font-size: 0.9rem;
+  transition: opacity 0.5s;
+}
+
+#addressDisplay:hover {
+  opacity: 0.8;
+  cursor: default;
+}
+
+.font-monospace {
+  font-family: 'Roboto Mono', monospace;
+}
+  

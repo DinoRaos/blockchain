@@ -21,7 +21,13 @@ contract Marketplace {
     function listItem(string memory _name, uint _price) public {
         require(_price > 0, "Preis muss groesser als 0 sein");
         itemCount++;
-        items[itemCount] = Item(itemCount, _name, _price, payable(msg.sender), payable(address(0)));
+        items[itemCount] = Item(
+            itemCount,
+            _name,
+            _price,
+            payable(msg.sender),
+            payable(address(0))
+        );
         emit ItemListed(itemCount, _name, _price, msg.sender);
     }
 
