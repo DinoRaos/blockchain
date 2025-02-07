@@ -1,27 +1,36 @@
 body {
-    padding-top: 50px; /* Damit Inhalte nicht hinter der Navbar verschwinden */
+  padding-top: 50px;
+  /* Damit Inhalte nicht hinter der Navbar verschwinden */
+}
+
+@media (max-width: 768px) {
+  body {
+    padding-top: 50px;
+    /* Mehr Platz für kleinere Screens */
   }
-  
-  @media (max-width: 768px) {
-    body {
-      padding-top: 50px; /* Mehr Platz für kleinere Screens */
-    }
-  }
+}
 
 #addressDisplay {
-  background: rgba(222, 222, 222, 0.1);
-  border-radius: 20px;
-  padding: 8px 15px;
-  font-size: 0.9rem;
+  background: linear-gradient(135deg, rgba(58, 58, 58, 0.8), rgba(104, 104, 104, 0.9));
+  border-radius: 15px;
+  padding: 5px 10px; /* Weniger Padding für eine kompaktere Anzeige */
+  font-size: 0.8rem; /* Kleinere Schriftgröße */
   transition: opacity 0.5s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  text-align: center;
+  min-width: 90px; /* Begrenzt die Breite */
 }
 
-#addressDisplay:hover {
-  opacity: 0.8;
-  cursor: default;
+#addressDisplay img {
+  width: 16px; /* Kleinere Icons */
+  height: 16px;
 }
+
+
 
 .font-monospace {
   font-family: 'Roboto Mono', monospace;
 }
-  

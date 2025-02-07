@@ -4,7 +4,6 @@ let walletIcon;
 
 // Persistent state keys
 const STATE_KEY = 'walletState';
-const CONNECTED_KEY = 'isConnected';
 
 function initializeWallet() {
     connectButton = document.getElementById('connectButton');
@@ -91,50 +90,44 @@ function persistState(address) {
 
 function clearPersistedState() {
     localStorage.removeItem(STATE_KEY);
-    window.location.reload();
 }
 
-function updateUI(address) {
+async function updateUI(address) {
     connectButton.style.display = 'none';
-    walletIcon.textContent = '✅';
-
-    // Create or update UI elements
+    
     let addressDisplay = document.getElementById('addressDisplay');
     if (!addressDisplay) {
-        addressDisplay = document.createElement('span');
+        addressDisplay = document.createElement('div');
         addressDisplay.id = 'addressDisplay';
-        addressDisplay.className = 'ms-2 text-light';
+        addressDisplay.className = 'ms-2 text-light font-monospace';
         connectButton.parentNode.insertBefore(addressDisplay, connectButton.nextSibling);
     }
-    addressDisplay.textContent = `${address.slice(0, 6)}...${address.slice(-4)}`;
 
-    let disconnectButton = document.getElementById('disconnectButton');
-    if (!disconnectButton) {
-        disconnectButton = document.createElement('button');
-        disconnectButton.id = 'disconnectButton';
-        disconnectButton.className = 'btn btn-danger ms-2';
-        disconnectButton.textContent = 'Disconnect';
-        addressDisplay.insertAdjacentElement('afterend', disconnectButton);
-        disconnectButton.addEventListener('click', disconnectWallet);
+    // Fetch ETH balance
+    let balance = "0.00";
+    if (provider) {
+        const balanceWei = await provider.getBalance(address);
+        balance = parseFloat(ethers.utils.formatEther(balanceWei)).toFixed(2);
     }
+
+    // Update content with ETH icon
+    addressDisplay.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg" width="20">
+            ${address.slice(0, 6)}...${address.slice(-4)}
+        </div>
+        <div style="font-size: 0.8rem; color: #fff; text-align: center; display: flex; align-items: center; gap: 4px;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/0/01/Ethereum_logo_translucent.svg" width="12">
+            ${balance}
+        </div>
+    `;
 }
 
-function disconnectWallet() {
-    connectButton.style.display = 'block';
-    walletIcon.textContent = '🔒';
-    document.getElementById('addressDisplay')?.remove();
-    document.getElementById('disconnectButton')?.remove();
-    clearPersistedState();
-}
 
 function handleAccountsChanged(accounts) {
     if (accounts.length === 0) {
-        disconnectWallet();
-    } else {
-        const savedState = JSON.parse(localStorage.getItem(STATE_KEY));
-        if (savedState?.address !== accounts[0].toLowerCase()) {
-            disconnectWallet();
-        }
+        clearPersistedState();
+        window.location.reload();
     }
 }
 
