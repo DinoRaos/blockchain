@@ -1,15 +1,19 @@
+<!-- templates/navbar.html -->
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
     <title>BlockBazaar</title>
   </head>
   <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
       <div class="container">
-        <a class="navbar-brand" href="index.html">BlockBazaar</a>
+        <a class="navbar-brand" href="/">BlockBazaar</a>
         <button
           class="navbar-toggler"
           type="button"
@@ -21,13 +25,13 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto">
             <li class="nav-item">
-              <a class="nav-link" href="buy.html">Kaufen</a>
+              <a class="nav-link" href="/buy">Kaufen</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="sell.html">Verkaufen</a>
+              <a class="nav-link" href="/sell">Verkaufen</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="profile.html">Profil</a>
+              <a class="nav-link" href="/profile">Profil</a>
             </li>
             <li class="nav-item">
               <div class="d-flex align-items-center">
@@ -40,5 +44,9 @@
         </div>
       </div>
     </nav>
+
+    <!-- Ethers.js und Wallet-Verbindung -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+    <script src="{{ url_for('static', filename='js/wallet.js') }}"></script>
   </body>
 </html>

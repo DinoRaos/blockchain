@@ -5,7 +5,19 @@ let walletIcon;
 // Persistent state keys
 const STATE_KEY = "walletState";
 
-function initializeWallet() {
+function handleAccountsChanged(accounts) {
+  if (accounts.length === 0) {
+    clearPersistedState();
+    updateUI(null);
+    window.location.reload();
+  } else {
+    const newAddress = accounts[0];
+    persistState(newAddress);
+    updateUI(newAddress);
+  }
+}
+
+async function initializeWallet() {
   connectButton = document.getElementById("connectButton");
   walletIcon = document.getElementById("walletIcon");
 
@@ -22,8 +34,8 @@ function initializeWallet() {
   // Set up listeners
   connectButton.addEventListener("click", connectWallet);
 
-  // Check initial state
-  checkPersistedState();
+  // Check initial state and restore connection
+  await checkPersistedState();
 
   // Set up Ethereum listeners
   if (window.ethereum) {
@@ -38,28 +50,22 @@ async function checkPersistedState() {
     if (savedState) {
       const { isConnected, address } = JSON.parse(savedState);
       if (isConnected && address) {
-        await verifyConnection(address);
+        // Versuchen Sie, die Wallet-Adresse abzurufen, ohne den Benutzer erneut zu fragen
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        if (accounts.length > 0 && accounts[0].toLowerCase() === address.toLowerCase()) {
+          // Verbindung erfolgreich wiederhergestellt
+          provider = new ethers.providers.Web3Provider(window.ethereum);
+          updateUI(address);
+        } else {
+          // Keine Verbindung möglich, Zustand löschen
+          clearPersistedState();
+        }
       }
     }
   } catch (error) {
     console.error("State restoration failed:", error);
     clearPersistedState();
   }
-}
-
-async function verifyConnection(expectedAddress) {
-  if (window.ethereum?.isConnected()) {
-    provider = new ethers.providers.Web3Provider(window.ethereum);
-    const signer = provider.getSigner();
-    const actualAddress = await signer.getAddress();
-
-    if (actualAddress.toLowerCase() === expectedAddress.toLowerCase()) {
-      updateUI(actualAddress);
-      return true;
-    }
-  }
-  clearPersistedState();
-  return false;
 }
 
 async function connectWallet() {
@@ -88,35 +94,38 @@ function persistState(address) {
 }
 
 function clearPersistedState() {
-  localStorage.removeItem(STATE_KEY);
+  localStorage.removeItem(STATE_KEY); // Zustand aus dem LocalStorage löschen
+  updateUI(null);
 }
 
 async function updateUI(address) {
-    connectButton.style.display = "none";
-  
-    let addressDisplay = document.getElementById("addressDisplay");
+  let addressDisplay = document.getElementById("addressDisplay");
+
+  if (address) {
+    // Wallet ist verbunden: Adresse und ETH-Saldo anzeigen
     if (!addressDisplay) {
       addressDisplay = document.createElement("div");
       addressDisplay.id = "addressDisplay";
       addressDisplay.className = "ms-2 text-light font-monospace";
-      connectButton.parentNode.insertBefore(
-        addressDisplay,
-        connectButton.nextSibling
-      );
+      if (connectButton && connectButton.parentNode) {
+        connectButton.parentNode.insertBefore(
+          addressDisplay,
+          connectButton.nextSibling
+        );
+      }
     }
-  
-    // Fetch ETH balance
+
     let balance = "0.00";
     if (provider) {
       const balanceWei = await provider.getBalance(address);
       balance = parseFloat(ethers.utils.formatEther(balanceWei)).toFixed(2);
     }
-  
+
     const displayBalance = balance === "0.00" || balance === 0 ? "0" : balance;
-  
+
     console.log('Address:', address);
     console.log('Balance:', displayBalance);
-  
+
     addressDisplay.innerHTML = `
       <div style="display: flex; align-items: center; gap: 8px;">
           <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg" width="20">
@@ -127,18 +136,19 @@ async function updateUI(address) {
           ${displayBalance}
       </div>
     `;
-  }
-  
 
-function handleAccountsChanged(accounts) {
-  if (accounts.length === 0) {
-    clearPersistedState();
-    window.location.reload();
-  }
-}
+    if (connectButton) {
+      connectButton.style.display = "none";
+    }
+  } else {
+    if (connectButton) {
+      connectButton.style.display = "block";
+    }
 
-function handleChainChanged() {
-  window.location.reload();
+    if (addressDisplay) {
+      addressDisplay.style.display = "none";
+    }
+  }
 }
 
 // Initialize when loaded

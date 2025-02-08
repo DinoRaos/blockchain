@@ -4,7 +4,8 @@
   "description": "",
   "main": "hardhat.config.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start:dev": "concurrently \"npx hardhat node\" \"wait-on http://127.0.0.1:8545 && npx hardhat run scripts/deploy.js --network localhost\" \"python app.py\""
   },
   "keywords": [],
   "author": "",
@@ -12,9 +13,11 @@
   "devDependencies": {
     "@nomiclabs/hardhat-waffle": "^2.0.6",
     "chai": "^5.1.2",
+    "concurrently": "^7.6.0",
     "ethereum-waffle": "^3.4.4",
     "ethers": "^5.7.2",
     "hardhat": "^2.22.18",
+    "wait-on": "^6.0.1",
     "webpack": "^5.97.1",
     "webpack-cli": "^6.0.1"
   },
