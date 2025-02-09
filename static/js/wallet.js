@@ -151,5 +151,10 @@ async function updateUI(address) {
   }
 }
 
+function handleChainChanged(chainId) {
+  console.log("Network changed to:", chainId);
+  window.location.reload();
+}
+
 // Initialize when loaded
 initializeWallet();

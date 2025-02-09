@@ -90,3 +90,24 @@ body {
   height: auto;
   border-radius: 5px;
 }
+
+.accordion-body .row {
+  align-items: center;
+}
+
+.accordion-body img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+/* Beispiel: Zusätzlicher Abstand für Badges */
+.badge {
+  font-size: 0.8rem;
+  margin-left: 0.5rem;
+}
+
+/* Beispiel: Leichter Hintergrund für verkaufte Artikel */
+.accordion-item.sold {
+  background-color: #f8d7da;
+}

@@ -1,9 +1,12 @@
+# database.py
 import sqlite3
 
 DB_NAME = "marketplace.db"
 
+
 def get_db_connection():
     return sqlite3.connect(DB_NAME)
+
 
 class Item:
     def __init__(self, id=None, name=None, description=None, price_eth=None, seller_address=None, buyer_address=None, status="available", image_url=None):
@@ -21,7 +24,8 @@ class Item:
             cursor = conn.cursor()
             cursor.execute(
                 "INSERT INTO items (name, description, price_eth, seller_address, buyer_address, status, image_url) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                (self.name, self.description, self.price_eth, self.seller_address, self.buyer_address, self.status, self.image_url)
+                (self.name, self.description, self.price_eth, self.seller_address,
+                 self.buyer_address, self.status, self.image_url)
             )
             conn.commit()
             self.id = cursor.lastrowid
@@ -31,7 +35,8 @@ class Item:
     def get_by_id(cls, item_id):
         with get_db_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT id, name, description, price_eth, seller_address, buyer_address, status, image_url FROM items WHERE id = ?", (item_id,))
+            cursor.execute(
+                "SELECT id, name, description, price_eth, seller_address, buyer_address, status, image_url FROM items WHERE id = ?", (item_id,))
             data = cursor.fetchone()
             if data:
                 return cls(*data)
@@ -41,7 +46,8 @@ class Item:
     def get_all(cls):
         with get_db_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT id, name, description, price_eth, seller_address, buyer_address, status, image_url FROM items")
+            cursor.execute(
+                "SELECT id, name, description, price_eth, seller_address, buyer_address, status, image_url FROM items")
             return [cls(*row) for row in cursor.fetchall()]
 
     def update(self):
@@ -49,7 +55,8 @@ class Item:
             cursor = conn.cursor()
             cursor.execute(
                 "UPDATE items SET name = ?, description = ?, price_eth = ?, seller_address = ?, buyer_address = ?, status = ?, image_url = ? WHERE id = ?",
-                (self.name, self.description, self.price_eth, self.seller_address, self.buyer_address, self.status, self.image_url, self.id)
+                (self.name, self.description, self.price_eth, self.seller_address,
+                 self.buyer_address, self.status, self.image_url, self.id)
             )
             conn.commit()
             print(f"Item '{self.name}' was updated.")
@@ -60,6 +67,27 @@ class Item:
             cursor.execute("DELETE FROM items WHERE id = ?", (self.id,))
             conn.commit()
             print(f"Item '{self.name}' was deleted.")
+
+    @classmethod
+    def get_all_by_seller(cls, seller_address):
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT id, name, description, price_eth, seller_address, buyer_address, status, image_url FROM items WHERE seller_address = ?", (seller_address,))
+            return [cls(*row) for row in cursor.fetchall()]
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "price_eth": self.price_eth,
+            "seller_address": self.seller_address,
+            "buyer_address": self.buyer_address,
+            "status": self.status,
+            "image_url": self.image_url
+        }
+
 
 class Transaction:
     def __init__(self, id=None, item_id=None, seller_address=None, buyer_address=None, price_eth=None, tx_hash=None):
@@ -75,7 +103,8 @@ class Transaction:
             cursor = conn.cursor()
             cursor.execute(
                 "INSERT INTO transactions (item_id, seller_address, buyer_address, price_eth, tx_hash) VALUES (?, ?, ?, ?, ?)",
-                (self.item_id, self.seller_address, self.buyer_address, self.price_eth, self.tx_hash)
+                (self.item_id, self.seller_address,
+                 self.buyer_address, self.price_eth, self.tx_hash)
             )
             conn.commit()
             self.id = cursor.lastrowid
@@ -92,7 +121,8 @@ class Transaction:
     def get_by_id(cls, transaction_id):
         with get_db_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM transactions WHERE id = ?", (transaction_id,))
+            cursor.execute(
+                "SELECT id, item_id, seller_address, buyer_address, price_eth, tx_hash FROM transactions WHERE id = ?", (transaction_id,))
             data = cursor.fetchone()
             if data:
                 return cls(*data)
@@ -102,8 +132,37 @@ class Transaction:
     def get_all(cls):
         with get_db_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM transactions")
+            cursor.execute(
+                "SELECT id, item_id, seller_address, buyer_address, price_eth, tx_hash FROM transactions")
             return [cls(*row) for row in cursor.fetchall()]
+
+    @classmethod
+    def get_all_by_seller(cls, seller_address):
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            # Achtung: Hier sollte die Tabelle "transactions" abgefragt werden.
+            cursor.execute(
+                "SELECT id, item_id, seller_address, buyer_address, price_eth, tx_hash FROM transactions WHERE seller_address = ?", (seller_address,))
+            return [cls(*row) for row in cursor.fetchall()]
+
+    @classmethod
+    def get_all_by_buyer(cls, buyer_address):
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT id, item_id, seller_address, buyer_address, price_eth, tx_hash FROM transactions WHERE buyer_address = ?", (buyer_address,))
+            return [cls(*row) for row in cursor.fetchall()]
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "item_id": self.item_id,
+            "seller_address": self.seller_address,
+            "buyer_address": self.buyer_address,
+            "price_eth": self.price_eth,
+            "tx_hash": self.tx_hash
+        }
+
 
 def create_tables():
     with get_db_connection() as conn:
@@ -159,24 +218,3 @@ def create_tables():
 
         conn.commit()
         print("Tables were created and indexes were added successfully.")
-
-
-
-if __name__ == "__main__":
-    create_tables()
-
-    # Example of creating, saving, and updating an item
-    item1 = Item(name="Laptop", description="Gaming Laptop mit RTX 3080", price_eth=1.5, seller_address="0x123abc", image_url="https://example.com/laptop.jpg")
-    item1.save()
-
-    item = Item.get_by_id(item1.id)
-    print(f"Gefundenes Item: {item.name}, Preis: {item.price_eth} ETH, Bild: {item.image_url}")
-
-    item.description = "Gaming Laptop mit RTX 4090"
-    item.update()
-
-    items = Item.get_all()
-    for i in items:
-        print(f"{i.id}: {i.name} - {i.description}")
-
-    item.delete()

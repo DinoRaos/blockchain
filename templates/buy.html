@@ -1,45 +1,69 @@
 <!DOCTYPE html>
 <html lang="de">
-<head>
+  <head>
     <meta charset="UTF-8" />
     <title>BlockBazaar – Kaufen</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet" />
-</head>
-<body>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="{{ url_for('static', filename='css/style.css') }}"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
     {% include 'navbar.html' %}
 
     <section class="py-5">
-        <div class="container">
-            <h2 class="mb-4">Gegenstände kaufen</h2>
-            <div id="itemList" class="row">
-                {% for item in items %}
-                <div class="col-md-4">
-                    <div class="card mb-4">
-                        <div class="image-container">
-                            <img src="{{ item.image_url }}" class="card-img-top" alt="{{ item.name }}">
-                        </div>
-                        <div class="card-body">
-                            <h5 class="card-title">{{ item.name }}</h5>
-                            <p class="card-text">{{ item.description }}</p>
-                            <div class="seller-info">
-                                <img src="https://www.svgrepo.com/show/448095/person-circle.svg" alt="Seller" class="seller-icon" />
-                                <span class="seller-address">{{ item.seller_address }}</span>
-                            </div>
-                            <div class="price-info">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/0/01/Ethereum_logo_translucent.svg" alt="ETH" class="eth-icon" />
-                                <span class="eth-price">{{ item.price_eth }} ETH</span>
-                            </div>
-                            <button class="btn btn-success mt-3" onclick="">
-                                Kaufen
-                            </button>
-                        </div>
-                    </div>
+      <div class="container">
+        <h2 class="mb-4">Gegenstände kaufen</h2>
+        <div id="itemList" class="row">
+          {% for item in items %}
+          <div class="col-md-4">
+            <div class="card mb-4">
+              <div class="image-container">
+                <img
+                  src="{{ item.image_url }}"
+                  class="card-img-top"
+                  alt="{{ item.name }}"
+                />
+              </div>
+              <div class="card-body">
+                <h5 class="card-title">{{ item.name }}</h5>
+                <p class="card-text">{{ item.description }}</p>
+                <div class="seller-info">
+                  <img
+                    src="https://www.svgrepo.com/show/448095/person-circle.svg"
+                    alt="Seller"
+                    class="seller-icon"
+                  />
+                  <span class="seller-address">{{ item.seller_address }}</span>
                 </div>
-                {% endfor %}
+                <div class="price-info">
+                  <img
+                    src="https://upload.wikimedia.org/wikipedia/commons/0/01/Ethereum_logo_translucent.svg"
+                    alt="ETH"
+                    class="eth-icon"
+                  />
+                  <span class="eth-price">{{ item.price_eth }} ETH</span>
+                </div>
+                <button
+                  class="btn btn-success mt-3"
+                  onclick="buyItem('{{ item.id }}', '{{ item.price_eth }}')"
+                >
+                  Kaufen
+                </button>
+              </div>
             </div>
+          </div>
+          {% endfor %}
         </div>
+      </div>
     </section>
-</body>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+    <script src="{{ url_for('static', filename='js/buy_transaction.js') }}"></script>
+  </body>
 </html>
