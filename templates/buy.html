@@ -13,7 +13,9 @@
 
 <body>
   {% include 'navbar.html' %}
-  
+
+  <!-- Alert-Container (falls noch nicht in deinem base-Template enthalten) -->
+  <div id="alertContainer" class="container mt-3"></div>
 
   <section class="py-5">
     <div class="container">
@@ -60,11 +62,62 @@
     </div>
   </section>
 
+  <!-- SCRIPTS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="{{ url_for('static', filename='js/buy_transaction.js') }}"></script>
 
+  <!-- Zusätzlicher Script-Block, um die MetaMask-Adresse zu ermitteln und Kauf-Buttons zu deaktivieren -->
   <script>
+    let currentUserAddress = null;
+
+    /**
+ * Holt die aktuell verbundene MetaMask-Adresse, ohne den Nutzer aktiv aufzufordern, sich zu verbinden.
+ * Wenn noch keine Verbindung besteht, bleibt currentUserAddress null.
+ */
+    async function initUserAddress() {
+      if (window.ethereum) {
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        // Hier nur die bereits verbundenen Accounts abrufen, ohne einen Request zu senden:
+        const accounts = await provider.listAccounts();
+        if (accounts.length > 0) {
+          currentUserAddress = accounts[0].toLowerCase();
+        }
+      } else {
+        console.warn("Kein Ethereum-Provider gefunden.");
+      }
+    }
+
+    /**
+     * Überprüft alle Produktkarten und deaktiviert den Kaufen-Button,
+     * wenn der Verkäufer mit dem eingeloggten MetaMask-Nutzer übereinstimmt.
+     */
+    function disableBuyButtonIfSeller() {
+      const cards = document.querySelectorAll(".card");
+      cards.forEach(card => {
+        const sellerElem = card.querySelector(".seller-address");
+        const buyButton = card.querySelector(".btn-success");
+        if (!sellerElem || !buyButton) return;
+
+        const sellerAddress = sellerElem.textContent.trim().toLowerCase();
+        if (sellerAddress === currentUserAddress && currentUserAddress) {
+          buyButton.disabled = true;
+          buyButton.textContent = "Eigener Artikel";
+          buyButton.classList.remove("btn-success");
+          buyButton.classList.add("btn-secondary");
+        }
+      });
+    }
+
+    // Nach DOM-Laden MetaMask-Adresse initialisieren und Buttons prüfen
+    document.addEventListener("DOMContentLoaded", async () => {
+      await initUserAddress();
+      disableBuyButtonIfSeller();
+    });
+
+    /**
+     * Wechselt zwischen verkürzter und vollständiger Anzeige der Artikelbeschreibung.
+     */
     function toggleDescription(elementId, button) {
       const descElem = document.getElementById(elementId);
       const dataFulltext = descElem.getAttribute('data-fulltext');
@@ -94,7 +147,6 @@
       }
     }
   </script>
-
 </body>
 
 </html>

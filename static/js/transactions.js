@@ -1,4 +1,8 @@
-document.addEventListener("DOMContentLoaded", async () => {
+/**
+ * Beim Laden des DOM wird geprüft, ob MetaMask verbunden ist.
+ * Falls ja, werden Transaktionen des aktuellen Nutzers abgerufen.
+ */
+ document.addEventListener("DOMContentLoaded", async () => {
   const transactionButton = document.getElementById("transactionButton");
 
   if (window.ethereum) {
@@ -30,7 +34,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 });
 
-
+/**
+ * Ruft asynchron die Transaktionen des Nutzers vom Backend ab.
+ * @param {string} userAddress - Die Adresse des Nutzers.
+ */
 async function fetchTransactions(userAddress) {
   const payload = { user_address: userAddress };
   console.log("Sending payload to /api/transactions:", payload);
@@ -53,7 +60,10 @@ async function fetchTransactions(userAddress) {
   }
 }
 
-
+/**
+ * Rendert die Liste der Transaktionen in der Benutzeroberfläche.
+ * @param {Array} transactions - Array von Transaktionsobjekten.
+ */
 function renderTransactionList(transactions) {
   const transactionList = document.getElementById("transactionList");
   transactionList.innerHTML = "";
@@ -78,6 +88,10 @@ function renderTransactionList(transactions) {
   });
 }
 
+/**
+ * Zeigt Details einer ausgewählten Transaktion in der UI an.
+ * @param {Object} transaction - Das Transaktionsobjekt mit Details.
+ */
 function showTransactionDetails(transaction) {
   const itemNameElem = document.getElementById("transactionItemName");
   const sellerElem = document.getElementById("transactionSeller");

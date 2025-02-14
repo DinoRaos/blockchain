@@ -3,6 +3,11 @@ let connectButton;
 let walletIcon;
 const STATE_KEY = "walletState";
 
+/**
+ * Behandelt Änderungen der Konten in MetaMask.
+ * Aktualisiert den persistierten Zustand und die UI, wenn sich die Konten ändern.
+ * @param {Array<string>} accounts - Array der aktuellen Adressen.
+ */
 function handleAccountsChanged(accounts) {
   if (accounts.length === 0) {
     clearPersistedState();
@@ -12,9 +17,14 @@ function handleAccountsChanged(accounts) {
     const newAddress = ethers.utils.getAddress(accounts[0]);
     persistState(newAddress);
     updateUI(newAddress);
+    window.location.reload();
   }
 }
 
+/**
+ * Initialisiert die Wallet-Funktionalität.
+ * Fügt Event-Listener hinzu und prüft, ob bereits ein Zustand persistiert wurde.
+ */
 async function initializeWallet() {
   connectButton = document.getElementById("connectButton");
   walletIcon = document.getElementById("walletIcon");
@@ -37,6 +47,10 @@ async function initializeWallet() {
   }
 }
 
+/**
+ * Überprüft, ob ein Zustand (Wallet-Verbindung) im Local Storage vorhanden ist.
+ * Falls ja, wird der Zustand wiederhergestellt und die UI entsprechend aktualisiert.
+ */
 async function checkPersistedState() {
   try {
     const savedState = localStorage.getItem(STATE_KEY);
@@ -62,6 +76,10 @@ async function checkPersistedState() {
   }
 }
 
+/**
+ * Verbindet die Wallet (MetaMask) des Nutzers.
+ * Fordert den Nutzer auf, seine Konten freizugeben, und aktualisiert anschließend die UI.
+ */
 async function connectWallet() {
   try {
     await window.ethereum.request({ method: "eth_requestAccounts" });
@@ -73,12 +91,16 @@ async function connectWallet() {
     persistState(address);
     updateUI(address);
   } catch (error) {
-    console.error("Connection failed:", error);
-    alert(`Connection error: ${error.message || error}`);
+    console.error("Verbindungsfehler:", error);
+    showAlert(`Verbindungsfehler: ${error.message || error}`);
     clearPersistedState();
   }
 }
 
+/**
+ * Speichert den aktuellen Wallet-Zustand im Local Storage.
+ * @param {string} address - Die Wallet-Adresse des Nutzers.
+ */
 function persistState(address) {
   const state = {
     isConnected: true,
@@ -88,11 +110,19 @@ function persistState(address) {
   localStorage.setItem(STATE_KEY, JSON.stringify(state));
 }
 
+/**
+ * Löscht den persistierten Wallet-Zustand aus dem Local Storage und aktualisiert die UI.
+ */
 function clearPersistedState() {
   localStorage.removeItem(STATE_KEY);
   updateUI(null);
 }
 
+/**
+ * Aktualisiert die Benutzeroberfläche basierend auf dem aktuellen Wallet-Zustand.
+ * Zeigt die verkürzte Adresse und den Kontostand an.
+ * @param {string|null} address - Die Wallet-Adresse oder null, wenn nicht verbunden.
+ */
 async function updateUI(address) {
   let addressDisplay = document.getElementById("addressDisplay");
 
@@ -134,9 +164,15 @@ async function updateUI(address) {
   }
 }
 
+/**
+ * Wird aufgerufen, wenn die Blockchain (Netzwerk) gewechselt wird.
+ * Aktualisiert die Seite.
+ * @param {string} chainId - Die neue Chain-ID.
+ */
 function handleChainChanged(chainId) {
   console.log("Network changed to:", chainId);
   window.location.reload();
 }
 
+// Initialisiere die Wallet-Funktionalität
 initializeWallet();

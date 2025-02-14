@@ -1,3 +1,28 @@
+/**
+ * Zeigt eine Bootstrap-Alert-Nachricht an.
+ * @param {string} message - Die Nachricht, die angezeigt wird.
+ * @param {string} [type="danger"] - Der Typ des Alerts (z.B. "danger", "success", "warning", "info").
+ */
+ function showAlert(message, type = "danger") {
+  const alertContainer = document.getElementById("alertContainer");
+  if (alertContainer) {
+    alertContainer.innerHTML = `
+      <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    `;
+    setTimeout(() => {
+      const alertElement = bootstrap.Alert.getOrCreateInstance(alertContainer.querySelector('.alert'));
+      if (alertElement) {
+        alertElement.close();
+      }
+    }, 5000);
+  } else {
+    console.error("Alert container not found");
+  }
+}
+
 let currentUserAddress = null;
 let salesDataGlobal = [];
 let editModalInstance = null;
@@ -5,6 +30,10 @@ let editModalInstance = null;
 const ETH_PRICE_CACHE_KEY = "ethPrice";
 const CACHE_EXPIRY_TIME = 60000;
 
+/**
+ * Holt den aktuellen ETH-Preis (in EUR) und nutzt dabei einen Cache, um unnötige API-Anfragen zu vermeiden.
+ * @returns {Promise<number|null>} - Der aktuelle ETH-Preis in EUR oder null, falls ein Fehler auftritt.
+ */
 async function fetchEthPrice() {
   const cachedPrice = localStorage.getItem(ETH_PRICE_CACHE_KEY);
   const cacheTimestamp = localStorage.getItem(ETH_PRICE_CACHE_KEY + "_timestamp");
@@ -34,6 +63,9 @@ async function fetchEthPrice() {
   }
 }
 
+/**
+ * Konvertiert den eingegebenen ETH-Betrag in einen ungefähren EUR-Betrag und zeigt diesen an.
+ */
 async function convertEthToFiatProfile() {
   const ethInput = document.getElementById("editItemPrice").value;
   const ethToFiatDisplay = document.getElementById("editEthToFiat");
@@ -56,6 +88,10 @@ async function convertEthToFiatProfile() {
   }
 }
 
+/**
+ * Wird ausgeführt, sobald das DOM geladen ist.
+ * Fordert MetaMask zur Verbindung auf, holt das Nutzerprofil und initialisiert diverse UI-Komponenten.
+ */
 document.addEventListener("DOMContentLoaded", async () => {
   if (window.ethereum) {
     try {
@@ -94,13 +130,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     } catch (err) {
       console.error("Fehler:", err);
       document.getElementById("profileContainer").innerHTML =
-        "<p>Fehler beim Laden des Profils.</p>";
+        `<div class="alert alert-danger" role="alert">Fehler beim Laden des Profils.</div>`;
     }
   } else {
-    alert("Kein Ethereum-Provider gefunden. Bitte installiere MetaMask.");
+    showAlert("Kein Ethereum-Provider gefunden. Bitte installiere MetaMask.", "danger");
   }
 });
 
+/**
+ * Rendert das Profil des Nutzers, indem es Verkäufe und Käufe in HTML darstellt.
+ * @param {Object} data - Das Profilobjekt mit den Arrays "sales" und "purchases".
+ */
 function renderProfile(data) {
   let salesHTML = data.sales
     .map((sale, index) => {
@@ -219,6 +259,11 @@ function renderProfile(data) {
   `;
 }
 
+/**
+ * Öffnet ein Modal zum Bearbeiten eines Verkaufsartikels.
+ * Füllt die Formularfelder mit den aktuellen Daten des Artikels.
+ * @param {number} itemId - Die ID des Artikels, der bearbeitet werden soll.
+ */
 function openEditModal(itemId) {
   const item = salesDataGlobal.find((sale) => sale.id === itemId);
   if (!item) return;
@@ -241,6 +286,9 @@ function openEditModal(itemId) {
   editModalInstance.show();
 }
 
+/**
+ * Aktualisiert die Bildvorschau, wenn ein neues Bild im Bearbeitungsformular ausgewählt wird.
+ */
 document.getElementById("editItemImage").addEventListener("change", (evt) => {
   const file = evt.target.files[0];
   if (!file) return;
@@ -250,6 +298,10 @@ document.getElementById("editItemImage").addEventListener("change", (evt) => {
   previewContainer.classList.remove("d-none");
 });
 
+/**
+ * Behandelt das Absenden des Bearbeitungsformulars für einen Artikel.
+ * Sendet die aktualisierten Daten (inklusive eines optionalen neuen Bildes) an das Backend.
+ */
 document.getElementById("editItemForm").addEventListener("submit", async function (event) {
   event.preventDefault();
 
@@ -266,7 +318,7 @@ document.getElementById("editItemForm").addEventListener("submit", async functio
 
     if (!resp.ok) {
       const errData = await resp.json();
-      alert("Fehler: " + (errData.error || "Unbekannter Fehler"));
+      showAlert("Fehler: " + (errData.error || "Unbekannter Fehler"), "danger");
       return;
     }
 
@@ -276,10 +328,14 @@ document.getElementById("editItemForm").addEventListener("submit", async functio
     location.reload();
   } catch (error) {
     console.error(error);
-    alert("Fehler beim Speichern.");
+    showAlert("Fehler beim Speichern: " + error.message, "danger");
   }
 });
 
+/**
+ * Behandelt das Löschen eines Artikels.
+ * Fragt eine Bestätigung vom Nutzer an und sendet dann eine DELETE-Anfrage an das Backend.
+ */
 async function handleDelete() {
   if (!confirm("Willst du diesen Artikel wirklich löschen?")) return;
 
@@ -293,7 +349,7 @@ async function handleDelete() {
 
     if (!resp.ok) {
       const errData = await resp.json();
-      alert("Fehler: " + (errData.error || "Unbekannter Fehler"));
+      showAlert("Fehler: " + (errData.error || "Unbekannter Fehler"), "danger");
       return;
     }
 
@@ -303,10 +359,15 @@ async function handleDelete() {
     location.reload();
   } catch (error) {
     console.error(error);
-    alert("Fehler beim Löschen.");
+    showAlert("Fehler beim Löschen: " + error.message, "danger");
   }
 }
 
+/**
+ * Wechselt zwischen verkürzter und vollständiger Anzeige der Artikelbeschreibung.
+ * @param {string} elementId - Die ID des Elements, das die Beschreibung enthält.
+ * @param {HTMLElement} button - Der Button, der den Toggle auslöst.
+ */
 function toggleDescription(elementId, button) {
   const descElem = document.getElementById(elementId);
   const fullText = JSON.parse(descElem.getAttribute("data-fulltext"));
@@ -323,6 +384,9 @@ function toggleDescription(elementId, button) {
   }
 }
 
+/**
+ * Verbirgt den Lade-Spinner, sobald das DOM vollständig geladen ist.
+ */
 document.addEventListener("DOMContentLoaded", () => {
   const loadingSpinner = document.getElementById("loadingSpinner");
   if (loadingSpinner) {

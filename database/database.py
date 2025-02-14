@@ -4,10 +4,30 @@ DB_NAME = "marketplace.db"
 
 
 def get_db_connection():
+    """
+    Erstellt und gibt eine Verbindung zur SQLite-Datenbank zurück.
+
+    :return: Eine SQLite-Datenbankverbindung.
+    """
     return sqlite3.connect(DB_NAME)
 
 
 class Item:
+    """
+    Repräsentiert einen Artikel im Marktplatz.
+
+    Attribute:
+        id (int): Eindeutige ID des Artikels.
+        name (str): Name des Artikels.
+        description (str): Beschreibung des Artikels.
+        price_eth (float): Preis des Artikels in Ether.
+        seller_address (str): Adresse des Verkäufers.
+        buyer_address (str): Adresse des Käufers (falls bereits gekauft).
+        status (str): Status des Artikels ("available" oder "sold").
+        image_url (str): URL des Bildes des Artikels.
+        created_at (str): Zeitstempel, wann der Artikel erstellt wurde.
+    """
+
     def __init__(self, id=None, name=None, description=None, price_eth=None, seller_address=None, buyer_address=None, status="available", image_url=None, created_at=None):
         self.id = id
         self.name = name
@@ -20,6 +40,10 @@ class Item:
         self.created_at = created_at
 
     def save(self):
+        """
+        Speichert den Artikel in der Datenbank.
+        Falls der Artikel neu ist, wird eine neue Zeile erstellt und die ID aktualisiert.
+        """
         with get_db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(
@@ -33,6 +57,12 @@ class Item:
 
     @classmethod
     def get_by_id(cls, item_id):
+        """
+        Ruft einen Artikel anhand der Artikel-ID aus der Datenbank ab.
+
+        :param item_id: Die ID des gesuchten Artikels.
+        :return: Ein Item-Objekt, falls gefunden, ansonsten None.
+        """
         with get_db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(
@@ -46,6 +76,11 @@ class Item:
 
     @classmethod
     def get_all(cls):
+        """
+        Ruft alle Artikel aus der Datenbank ab.
+
+        :return: Eine Liste von Item-Objekten.
+        """
         with get_db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(
@@ -54,6 +89,9 @@ class Item:
             return [cls(*row) for row in cursor.fetchall()]
 
     def update(self):
+        """
+        Aktualisiert die Informationen dieses Artikels in der Datenbank.
+        """
         with get_db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(
@@ -66,6 +104,9 @@ class Item:
             conn.commit()
 
     def delete(self):
+        """
+        Löscht den Artikel aus der Datenbank.
+        """
         with get_db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("DELETE FROM items WHERE id = ?", (self.id,))
@@ -73,6 +114,12 @@ class Item:
 
     @classmethod
     def get_all_by_seller(cls, seller_address):
+        """
+        Ruft alle Artikel ab, die von einem bestimmten Verkäufer erstellt wurden.
+
+        :param seller_address: Die Adresse des Verkäufers.
+        :return: Eine Liste von Item-Objekten.
+        """
         with get_db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(
@@ -83,6 +130,12 @@ class Item:
 
     @classmethod
     def get_all_by_buyer(cls, buyer_address):
+        """
+        Ruft alle Artikel ab, die von einem bestimmten Käufer erworben wurden.
+
+        :param buyer_address: Die Adresse des Käufers.
+        :return: Eine Liste von Item-Objekten.
+        """
         with get_db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(
@@ -92,6 +145,11 @@ class Item:
             return [cls(*row) for row in cursor.fetchall()]
 
     def to_dict(self):
+        """
+        Wandelt das Item-Objekt in ein Dictionary um, um es beispielsweise als JSON zurückzugeben.
+
+        :return: Ein Dictionary mit den Artikelattributen.
+        """
         return {
             "id": self.id,
             "name": self.name,
@@ -106,6 +164,10 @@ class Item:
 
 
 def create_tables():
+    """
+    Erstellt die erforderlichen Tabellen in der Datenbank, falls diese noch nicht existieren.
+    Zusätzlich werden Indizes für häufig abgefragte Felder erstellt.
+    """
     with get_db_connection() as conn:
         cursor = conn.cursor()
 

@@ -1,6 +1,35 @@
 const ETH_PRICE_CACHE_KEY = "ethPrice";
 const CACHE_EXPIRY_TIME = 60000;
 
+/**
+ * Zeigt eine Bootstrap-Alert-Nachricht an.
+ * @param {string} message - Die Nachricht, die angezeigt wird.
+ * @param {string} [type="danger"] - Der Typ des Alerts (z.B. "danger", "success", "warning", "info").
+ */
+function showAlert(message, type = "danger") {
+  const alertContainer = document.getElementById("alertContainer");
+  if (alertContainer) {
+    alertContainer.innerHTML = `
+      <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    `;
+    setTimeout(() => {
+      const alertElement = bootstrap.Alert.getOrCreateInstance(alertContainer.querySelector('.alert'));
+      if (alertElement) {
+        alertElement.close();
+      }
+    }, 5000);
+  } else {
+    console.error("Alert container not found");
+  }
+}
+
+/**
+ * Holt den aktuellen ETH-Preis (in EUR) und nutzt dabei einen Cache, um API-Anfragen zu minimieren.
+ * @returns {Promise<number|null>} - Den aktuellen ETH-Preis in EUR oder null, falls ein Fehler auftritt.
+ */
 async function fetchEthPrice() {
   const cachedPrice = localStorage.getItem(ETH_PRICE_CACHE_KEY);
   const cacheTimestamp = localStorage.getItem(ETH_PRICE_CACHE_KEY + "_timestamp");
@@ -32,6 +61,9 @@ async function fetchEthPrice() {
   }
 }
 
+/**
+ * Konvertiert den eingegebenen ETH-Betrag in einen ungefähren EUR-Betrag und zeigt diesen an.
+ */
 async function convertEthToFiat() {
   const ethInput = document.getElementById("itemPrice").value;
   const ethToFiatDisplay = document.getElementById("ethToFiat");
@@ -54,6 +86,10 @@ async function convertEthToFiat() {
   }
 }
 
+/**
+ * Ruft die MetaMask-Adresse des aktuellen Nutzers ab.
+ * @returns {Promise<string|null>} - Die Adresse oder null, falls ein Fehler auftritt.
+ */
 async function getMetaMaskAddress() {
   if (typeof window.ethereum !== "undefined") {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -67,11 +103,15 @@ async function getMetaMaskAddress() {
       return null;
     }
   } else {
-    alert("MetaMask ist nicht installiert.");
+    showAlert("MetaMask ist nicht installiert.", "danger");
     return null;
   }
 }
 
+/**
+ * Fügt einen Submit-Event-Listener zum Verkaufsformular hinzu.
+ * Bei erfolgreicher Verbindung mit MetaMask wird die Verkäuferadresse gesetzt und das Formular abgeschickt.
+ */
 document.getElementById("sellForm").addEventListener("submit", async function (event) {
   event.preventDefault();
 
@@ -80,10 +120,13 @@ document.getElementById("sellForm").addEventListener("submit", async function (e
     document.getElementById("sellerAddress").value = address;
     this.submit();
   } else {
-    alert("Bitte verbinden Sie sich mit MetaMask, um fortzufahren.");
+    showAlert("Bitte verbinden Sie sich mit MetaMask, um fortzufahren.", "warning");
   }
 });
 
+/**
+ * Fügt einen Change-Event-Listener zum Dateieingabefeld hinzu, um eine Bildvorschau anzuzeigen.
+ */
 document.getElementById("itemImage").addEventListener("change", function (event) {
   const file = event.target.files[0];
   if (file) {
@@ -96,9 +139,15 @@ document.getElementById("itemImage").addEventListener("change", function (event)
   }
 });
 
+/**
+ * Initialisiert UI-Komponenten, sobald das DOM geladen ist, und startet den Abruf des ETH-Preises.
+ */
 document.addEventListener("DOMContentLoaded", function () {
   new bootstrap.Tooltip(document.getElementById("ethInfoBtn"));
   fetchEthPrice();
 });
 
+/**
+ * Fügt einen Input-Event-Listener zum Preisfeld hinzu, um den ETH-Preis in EUR umzurechnen.
+ */
 document.getElementById("itemPrice").addEventListener("input", convertEthToFiat);
