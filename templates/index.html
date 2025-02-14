@@ -24,10 +24,8 @@
     </div>
   </section>
 
-  <!-- Bootstrap Carousel -->
   <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
 
-    <!-- Indikatoren -->
     <div class="carousel-indicators">
       {% for index in range(products|length) %}
       <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="{{ index }}" {% if loop.first
@@ -35,7 +33,6 @@
       {% endfor %}
     </div>
 
-    <!-- Karussell-Inhalt -->
     <div class="carousel-inner">
       {% for product in products %}
       <div class="carousel-item {% if loop.first %}active{% endif %}">
@@ -49,7 +46,6 @@
       {% endfor %}
     </div>
 
-    <!-- Navigation: Optimierte dunkle Pfeile -->
     <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
       <span class="carousel-control-prev-icon custom-arrow" aria-hidden="true"></span>
       <span class="visually-hidden">Vorheriges</span>

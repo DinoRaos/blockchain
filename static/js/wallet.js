@@ -9,7 +9,7 @@ function handleAccountsChanged(accounts) {
     updateUI(null);
     window.location.reload();
   } else {
-    const newAddress = ethers.utils.getAddress(accounts[0]); // Checksummed-Format erzwingen
+    const newAddress = ethers.utils.getAddress(accounts[0]);
     persistState(newAddress);
     updateUI(newAddress);
   }
@@ -24,7 +24,7 @@ async function initializeWallet() {
     return;
   }
 
-  connectButton.hidden = true; // Standardmäßig verstecken
+  connectButton.hidden = true;
 
   connectButton.removeEventListener("click", connectWallet);
   connectButton.addEventListener("click", connectWallet);
@@ -44,7 +44,6 @@ async function checkPersistedState() {
       const { isConnected, address } = JSON.parse(savedState);
       if (isConnected && address) {
         const accounts = await window.ethereum.request({ method: "eth_accounts" });
-        // Vergleiche im Checksummed-Format:
         if (
           accounts.length > 0 &&
           ethers.utils.getAddress(accounts[0]) === ethers.utils.getAddress(address)
@@ -55,11 +54,11 @@ async function checkPersistedState() {
         }
       }
     }
-    connectButton.hidden = false; // Zeige den Button, wenn keine Verbindung besteht
+    connectButton.hidden = false;
   } catch (error) {
     console.error("State restoration failed:", error);
     clearPersistedState();
-    connectButton.hidden = false; // Bei Fehler sicherstellen, dass er angezeigt wird
+    connectButton.hidden = false;
   }
 }
 
@@ -68,7 +67,6 @@ async function connectWallet() {
     await window.ethereum.request({ method: "eth_requestAccounts" });
     provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
-    // Hole die Adresse im Checksummed-Format:
     const address = ethers.utils.getAddress(await signer.getAddress());
     console.log("Current user address (checksummed):", address);
 
@@ -84,7 +82,7 @@ async function connectWallet() {
 function persistState(address) {
   const state = {
     isConnected: true,
-    address: address,  // Den originalen Checksummed-Wert speichern
+    address: address,
     timestamp: Date.now(),
   };
   localStorage.setItem(STATE_KEY, JSON.stringify(state));

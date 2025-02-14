@@ -72,7 +72,6 @@
               </div>
             </div>
 
-            <!-- Styled EUR Price Display (wie in sell.html) -->
             <div id="editEthToFiatContainer" class="alert alert-info mt-2" style="display: none;">
               <strong>Geschätzter Preis:</strong> <span id="editEthToFiat">~ 0.00 EUR</span>
             </div>
@@ -86,11 +85,9 @@
               </div>
             </div>
 
-            <!-- Verkäuferadresse -->
             <input type="hidden" id="editSellerAddress" name="sellerAddress" value="" />
           </div>
           <div class="modal-footer">
-            <!-- Endgültig löschen -->
             <button type="button" class="btn btn-outline-danger me-auto" id="deleteItemBtn">
               Endgültig löschen
             </button>
@@ -107,11 +104,9 @@
     </div>
   </div>
 
-  <!-- ethers.js + Bootstrap JS -->
+
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-  <!-- Dein Profil-spezifisches JS -->
   <script src="{{ url_for('static', filename='js/profile.js') }}"></script>
 </body>
 

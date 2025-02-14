@@ -15,7 +15,6 @@ body {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
-  /* Bild wird skaliert, um vollständig sichtbar zu sein */
 }
 
 .seller-info {
@@ -24,10 +23,8 @@ body {
   margin-bottom: 10px;
 }
 
-/* Angepasst für ein neues, fontbasiertes Icon */
 .seller-icon {
   font-size: 1.5rem;
-  /* Skalierung über font-size */
   margin-right: 8px;
   vertical-align: middle;
 }
@@ -42,7 +39,6 @@ body {
   align-items: center;
 }
 
-/* Falls du auch ein fontbasiertes ETH-Icon nutzen möchtest */
 .eth-icon {
   font-size: 1.2rem;
   margin-right: 8px;
@@ -66,7 +62,6 @@ body {
   width: 100%;
 }
 
-/* Accordion-Anpassungen */
 .accordion-item {
   margin-bottom: 10px;
   border: 1px solid #ddd;
@@ -104,33 +99,27 @@ body {
   border-radius: 8px;
 }
 
-/* Zusätzlicher Abstand für Badges */
 .badge {
   font-size: 0.8rem;
   margin-left: 0.5rem;
 }
 
-/* Leichter Hintergrund für verkaufte Artikel */
 .accordion-item.sold {
   background-color: #f8d7da;
 }
 
 #itemDescription {
   white-space: pre-wrap;
-  /* Zeilenumbrüche und Leerzeichen erhalten */
 }
 
-/* Ensure text inside the card doesn't push outside */
 .card-body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* Adjustments for smaller screens */
 @media (max-width: 768px) {
   .row {
     flex-direction: column;
-    /* Stack items */
   }
 
   .accordion-body {
@@ -142,12 +131,10 @@ body {
     width: 100%;
   }
 
-  /* Reduce padding for mobile views */
   .card-body {
     padding: 12px;
   }
 
-  /* Center align images and text for better UX */
   .image-container {
     text-align: center;
   }
@@ -167,7 +154,6 @@ body {
 .seller-address {
   font-size: 0.9rem;
   word-break: break-all;
-  /* oder overflow-wrap: break-word; */
 }
 
 .seller-info {
@@ -193,10 +179,8 @@ body {
 
 .edit-icon:hover {
   color: #0dcaf0 !important;
-  /* Bootstrap "info" Blau */
 }
 
-/* 1) Immer weiße Pfeil-Icons (collapsed und expanded) */
 .accordion-button {
   --bs-accordion-btn-icon: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='%23ffffff' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
   --bs-accordion-btn-active-icon: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='%23ffffff' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
@@ -204,15 +188,12 @@ body {
 
 .accordion-button {
   background-color: #212529 !important;
-  /* Bootstrap Navbar-Schwarz */
   color: #fff !important;
   border: none !important;
 }
 
-/* Sobald geöffnet -> Grau */
 .accordion-button:not(.collapsed) {
   background-color: #212529 !important;
-  /* Bootstrap Grau */
   color: #fff !important;
 }
 
@@ -254,10 +235,10 @@ body {
 
 .carousel-item img {
   padding-top: 0.75rem;
-  max-height: 400px; /* Begrenzte maximale Höhe */
-  width: 100%; /* Breite auf 100% setzen */
-  object-fit: contain; /* Bild bleibt komplett sichtbar */
-  object-position: center; /* Zentrierung */
+  max-height: 400px;
+  width: 100%;
+  object-fit: contain;
+  object-position: center;
   display: block;
   margin: 0 auto;
 }

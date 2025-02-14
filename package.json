@@ -4,7 +4,7 @@
   "description": "",
   "main": "hardhat.config.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npx hardhat test",
     "start:dev": "concurrently \"npx hardhat node\" \"wait-on http://127.0.0.1:8545 && npx hardhat run scripts/deploy.js --network localhost\" \"python app.py\""
   },
   "keywords": [],
@@ -22,6 +22,7 @@
     "webpack-cli": "^6.0.1"
   },
   "dependencies": {
+    "@openzeppelin/contracts": "^4.9.6",
     "web3modal": "^1.9.12"
   }
 }

@@ -18,13 +18,11 @@ async function main() {
 
   console.log("MarketplacePayment deployed to:", marketplacePayment.address);
 
-  // Erstelle ein Konfigurationsobjekt mit Adresse und ABI
   const config = {
     contractAddress: marketplacePayment.address,
     abi: MarketplacePaymentArtifact.abi,
   };
 
-  // Schreibe die Konfiguration in den static-Ordner, damit dein Frontend sie laden kann
   const configPath = path.join(__dirname, "..", "static", "deployedAddress.json");
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 

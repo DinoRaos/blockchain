@@ -21,7 +21,6 @@ async function fetchEthPrice() {
     if (data.ethereum && data.ethereum.eur) {
       const ethPrice = parseFloat(data.ethereum.eur);
 
-      // Cache the price in localStorage
       localStorage.setItem(ETH_PRICE_CACHE_KEY, ethPrice);
       localStorage.setItem(ETH_PRICE_CACHE_KEY + "_timestamp", Date.now());
 
@@ -40,7 +39,7 @@ async function convertEthToFiat() {
 
   if (!ethInput || ethInput <= 0) {
     ethToFiatDisplay.innerText = "~ 0.00 EUR";
-    alertBox.style.display = "none"; // Hide if no input
+    alertBox.style.display = "none";
     return;
   }
 
@@ -48,14 +47,13 @@ async function convertEthToFiat() {
   if (ethPrice !== null) {
     const convertedPrice = (ethInput * ethPrice).toFixed(2);
     ethToFiatDisplay.innerText = `~ ${convertedPrice} EUR`;
-    alertBox.style.display = "block"; // Show when valid
+    alertBox.style.display = "block";
   } else {
     ethToFiatDisplay.innerText = "~ API Offline";
     alertBox.style.display = "block";
   }
 }
 
-// MetaMask Wallet Connection
 async function getMetaMaskAddress() {
   if (typeof window.ethereum !== "undefined") {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -74,7 +72,6 @@ async function getMetaMaskAddress() {
   }
 }
 
-// Assign MetaMask address to form before submission
 document.getElementById("sellForm").addEventListener("submit", async function (event) {
   event.preventDefault();
 
@@ -87,7 +84,6 @@ document.getElementById("sellForm").addEventListener("submit", async function (e
   }
 });
 
-// Image Preview on Upload
 document.getElementById("itemImage").addEventListener("change", function (event) {
   const file = event.target.files[0];
   if (file) {
@@ -100,12 +96,9 @@ document.getElementById("itemImage").addEventListener("change", function (event)
   }
 });
 
-
-// Initialize Bootstrap Tooltips
 document.addEventListener("DOMContentLoaded", function () {
   new bootstrap.Tooltip(document.getElementById("ethInfoBtn"));
   fetchEthPrice();
 });
 
-// Update EUR conversion when ETH input changes
 document.getElementById("itemPrice").addEventListener("input", convertEthToFiat);

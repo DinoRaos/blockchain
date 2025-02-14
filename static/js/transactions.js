@@ -5,28 +5,24 @@ document.addEventListener("DOMContentLoaded", async () => {
     try {
       const accounts = await window.ethereum.request({ method: "eth_accounts" });
       if (accounts.length > 0) {
-        // Erzeuge den Checksummed-String
         const checksummedAddress = ethers.utils.getAddress(accounts[0]);
         console.log("MetaMask ist bereits verbunden:", checksummedAddress);
-        transactionButton.classList.remove("d-none"); // Button sichtbar machen
+        transactionButton.classList.remove("d-none");
 
-        // Verwende den Checksummed-Wert beim Aufruf
         fetchTransactions(checksummedAddress);
       } else {
         console.log("MetaMask nicht verbunden.");
-        transactionButton.classList.add("d-none"); // Button verstecken
+        transactionButton.classList.add("d-none");
       }
     } catch (err) {
       console.error("Fehler beim Prüfen der MetaMask Verbindung:", err);
     }
   }
 
-  // Attach click event listener here so that transactionButton is defined
   transactionButton.addEventListener("click", async () => {
     if (window.ethereum) {
       const accounts = await window.ethereum.request({ method: "eth_accounts" });
       if (accounts.length > 0) {
-        // Erzeuge auch hier den Checksummed-String
         const checksummedAddress = ethers.utils.getAddress(accounts[0]);
         fetchTransactions(checksummedAddress);
       }
@@ -36,9 +32,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
 async function fetchTransactions(userAddress) {
-  // Erstelle das Payload-Objekt
   const payload = { user_address: userAddress };
-  // Logge das Payload-Objekt in der Konsole
   console.log("Sending payload to /api/transactions:", payload);
 
   try {

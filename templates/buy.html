@@ -41,7 +41,6 @@
               {% endif %}
 
               <div class="seller-info mt-3">
-                <!-- Bootstrap Icon anstelle des Bildes -->
                 <i class="bi bi-person-circle seller-icon"></i>
                 <span class="seller-address">{{ item.seller_address }}</span>
               </div>
@@ -61,7 +60,6 @@
     </div>
   </section>
 
-  <!-- Ethers.js, Bootstrap-Bundle & dein Buy-Skript -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="{{ url_for('static', filename='js/buy_transaction.js') }}"></script>

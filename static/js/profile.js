@@ -1,14 +1,10 @@
-// profile.js
-
 let currentUserAddress = null;
 let salesDataGlobal = [];
 let editModalInstance = null;
 
-// ETH-Preis-Cache-Konfiguration
 const ETH_PRICE_CACHE_KEY = "ethPrice";
-const CACHE_EXPIRY_TIME = 60000; // 1 Minute
+const CACHE_EXPIRY_TIME = 60000;
 
-// Funktion: ETH-Preis von CoinGecko abrufen (mit Cache)
 async function fetchEthPrice() {
   const cachedPrice = localStorage.getItem(ETH_PRICE_CACHE_KEY);
   const cacheTimestamp = localStorage.getItem(ETH_PRICE_CACHE_KEY + "_timestamp");
@@ -38,7 +34,6 @@ async function fetchEthPrice() {
   }
 }
 
-// Funktion: Umrechnung von ETH in EUR im Edit-Modul
 async function convertEthToFiatProfile() {
   const ethInput = document.getElementById("editItemPrice").value;
   const ethToFiatDisplay = document.getElementById("editEthToFiat");
@@ -61,7 +56,6 @@ async function convertEthToFiatProfile() {
   }
 }
 
-// Initialisierung, sobald DOM geladen ist
 document.addEventListener("DOMContentLoaded", async () => {
   if (window.ethereum) {
     try {
@@ -70,7 +64,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       const signer = provider.getSigner();
       currentUserAddress = await signer.getAddress();
 
-      // Profil-Daten abrufen
       const response = await fetch("/api/profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -80,28 +73,23 @@ document.addEventListener("DOMContentLoaded", async () => {
         throw new Error("Fehler beim Abrufen der Profildaten");
       }
       const data = await response.json();
-      salesDataGlobal = data.sales; // Für Edit-Funktionalität speichern
+      salesDataGlobal = data.sales;
       renderProfile(data);
 
-      // Bootstrap-Modal instanziieren
       editModalInstance = new bootstrap.Modal(document.getElementById("editModal"));
 
-      // Delete-Button im Modal
       document.getElementById("deleteItemBtn").addEventListener("click", handleDelete);
 
-      // Tooltip im Edit-Modul initialisieren
       const infoBtn = document.getElementById("editEthInfoBtn");
       if (infoBtn) {
         new bootstrap.Tooltip(infoBtn);
       }
 
-      // Event-Listener für Preis-Eingabe im Edit-Modul
       const editPriceInput = document.getElementById("editItemPrice");
       if (editPriceInput) {
         editPriceInput.addEventListener("input", convertEthToFiatProfile);
       }
 
-      // ETH-Preis sofort abrufen
       fetchEthPrice();
     } catch (err) {
       console.error("Fehler:", err);
@@ -113,7 +101,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
-// Funktion: Profil rendern (Verkäufe & Käufe)
 function renderProfile(data) {
   let salesHTML = data.sales
     .map((sale, index) => {
@@ -232,7 +219,6 @@ function renderProfile(data) {
   `;
 }
 
-// Funktion: Öffnet das Edit-Modal und befüllt die Felder
 function openEditModal(itemId) {
   const item = salesDataGlobal.find((sale) => sale.id === itemId);
   if (!item) return;
@@ -243,7 +229,6 @@ function openEditModal(itemId) {
   document.getElementById("editItemPrice").value = item.price_eth;
   document.getElementById("editSellerAddress").value = item.seller_address;
 
-  // Bildvorschau anzeigen
   const previewContainer = document.getElementById("editImagePreviewContainer");
   const previewImg = document.getElementById("editImagePreview");
   if (item.image_url) {
@@ -256,7 +241,6 @@ function openEditModal(itemId) {
   editModalInstance.show();
 }
 
-// Event-Listener: Zeigt eine Bildvorschau, wenn ein neues Bild ausgewählt wird
 document.getElementById("editItemImage").addEventListener("change", (evt) => {
   const file = evt.target.files[0];
   if (!file) return;
@@ -266,7 +250,6 @@ document.getElementById("editItemImage").addEventListener("change", (evt) => {
   previewContainer.classList.remove("d-none");
 });
 
-// Formular abschicken (multipart/form-data)
 document.getElementById("editItemForm").addEventListener("submit", async function (event) {
   event.preventDefault();
 
@@ -297,7 +280,6 @@ document.getElementById("editItemForm").addEventListener("submit", async functio
   }
 });
 
-// Funktion: Endgültig löschen
 async function handleDelete() {
   if (!confirm("Willst du diesen Artikel wirklich löschen?")) return;
 
@@ -325,7 +307,6 @@ async function handleDelete() {
   }
 }
 
-// Funktion: Mehr/Weniger-Anzeige der Beschreibung
 function toggleDescription(elementId, button) {
   const descElem = document.getElementById(elementId);
   const fullText = JSON.parse(descElem.getAttribute("data-fulltext"));
@@ -343,7 +324,6 @@ function toggleDescription(elementId, button) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Spinner ausblenden, wenn Daten geladen sind
   const loadingSpinner = document.getElementById("loadingSpinner");
   if (loadingSpinner) {
     loadingSpinner.style.display = "none";

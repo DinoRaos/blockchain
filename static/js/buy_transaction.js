@@ -1,6 +1,3 @@
-// buy_transaction.js
-
-// Funktion, um die Verkäuferadresse aus deiner DB abzurufen
 async function getSellerAddress(itemId) {
   const response = await fetch(`/get_seller/${itemId}`);
   const data = await response.json();
@@ -11,7 +8,6 @@ async function getSellerAddress(itemId) {
   }
 }
 
-// Lädt die Contract-Konfiguration (Adresse und ABI) aus der Datei im static-Ordner
 async function loadContractConfig() {
   const response = await fetch("/static/deployedAddress.json");
   if (!response.ok) {
@@ -20,15 +16,13 @@ async function loadContractConfig() {
   return response.json();
 }
 
-// Führt den Kauf über den Smart Contract als Zahlungsabwickler aus
 async function performContractPurchase(sellerAddress, priceEth) {
   if (window.ethereum) {
-    const config = await loadContractConfig(); // Muss die Konfiguration des neuen Contracts enthalten
+    const config = await loadContractConfig();
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
     const marketplace = new ethers.Contract(config.contractAddress, config.abi, signer);
 
-    // Rufe die purchase-Funktion des Contracts auf und übergebe den Verkäufer sowie den Betrag (in wei)
     const tx = await marketplace.purchase(sellerAddress, {
       value: ethers.utils.parseEther(priceEth.toString())
     });
@@ -39,18 +33,14 @@ async function performContractPurchase(sellerAddress, priceEth) {
   }
 }
 
-// Hauptfunktion, die den Kauf auslöst
 async function buyItem(itemId, priceEth) {
   try {
-    // Hole die Verkäuferadresse aus deiner Datenbank (Off-Chain)
     const sellerAddress = await getSellerAddress(itemId);
     console.log(`Verkäufer-Adresse: ${sellerAddress}`);
 
-    // Führe den Kauf über den Smart Contract (On-Chain) durch
     const transaction = await performContractPurchase(sellerAddress, priceEth);
     console.log("On-Chain Transaktion erfolgreich:", transaction);
 
-    // Aktualisiere den DB-Status via dein Backend (Off-Chain)
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
     const buyerAddress = await signer.getAddress();
