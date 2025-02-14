@@ -1,8 +1,9 @@
-// Funktion, um die Verkäuferadresse abzurufen
+// buy_transaction.js
+
+// Funktion, um die Verkäuferadresse aus deiner DB abzurufen
 async function getSellerAddress(itemId) {
   const response = await fetch(`/get_seller/${itemId}`);
   const data = await response.json();
-
   if (data.seller_address) {
     return data.seller_address;
   } else {
@@ -10,54 +11,57 @@ async function getSellerAddress(itemId) {
   }
 }
 
-// Funktion für die Transaktion
-async function performTransaction(sellerAddress, priceEth) {
-  // Verbindungsaufbau zum Ethereum-Netzwerk mit MetaMask
+// Lädt die Contract-Konfiguration (Adresse und ABI) aus der Datei im static-Ordner
+async function loadContractConfig() {
+  const response = await fetch("/static/deployedAddress.json");
+  if (!response.ok) {
+    throw new Error("Konfiguration konnte nicht geladen werden.");
+  }
+  return response.json();
+}
+
+// Führt den Kauf über den Smart Contract als Zahlungsabwickler aus
+async function performContractPurchase(sellerAddress, priceEth) {
   if (window.ethereum) {
-    const provider = new ethers.providers.Web3Provider(window.ethereum);  // Korrekte Verwendung von Web3Provider
-    const signer = await provider.getSigner();
+    const config = await loadContractConfig(); // Muss die Konfiguration des neuen Contracts enthalten
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+    const marketplace = new ethers.Contract(config.contractAddress, config.abi, signer);
 
-    // Umwandlung von ETH in wei (Ethereum-Mindestwährungseinheit)
-    const value = ethers.utils.parseEther(priceEth);
-
-    // Erstellung der Transaktion
-    const tx = await signer.sendTransaction({
-      to: sellerAddress,
-      value: value
+    // Rufe die purchase-Funktion des Contracts auf und übergebe den Verkäufer sowie den Betrag (in wei)
+    const tx = await marketplace.purchase(sellerAddress, {
+      value: ethers.utils.parseEther(priceEth.toString())
     });
-
-    // Rückgabe der Transaktion
+    await tx.wait();
     return tx;
   } else {
     throw new Error("Ethereum provider not found. Please install MetaMask.");
   }
 }
 
-// Funktion zum Kauf eines Artikels
+// Hauptfunktion, die den Kauf auslöst
 async function buyItem(itemId, priceEth) {
   try {
+    // Hole die Verkäuferadresse aus deiner Datenbank (Off-Chain)
     const sellerAddress = await getSellerAddress(itemId);
     console.log(`Verkäufer-Adresse: ${sellerAddress}`);
 
-    // Durchführung der Transaktion
-    const transaction = await performTransaction(sellerAddress, priceEth);
-    console.log('Transaktion erfolgreich:', transaction);
+    // Führe den Kauf über den Smart Contract (On-Chain) durch
+    const transaction = await performContractPurchase(sellerAddress, priceEth);
+    console.log("On-Chain Transaktion erfolgreich:", transaction);
 
-    // Sende die Transaktionsdaten an den Backend-Endpunkt
+    // Aktualisiere den DB-Status via dein Backend (Off-Chain)
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+    const buyerAddress = await signer.getAddress();
     const response = await fetch(`/buy/offer/${itemId}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        buyer_address: await (new ethers.providers.Web3Provider(window.ethereum).getSigner()).getAddress(),
-        tx_hash: transaction.hash,
-      }),
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ buyer_address: buyerAddress }),
     });
-
     const result = await response.json();
     if (response.ok) {
-      alert("Kauf erfolgreich! Transaktionshash: " + transaction.hash);
+      alert("Kauf erfolgreich!");
     } else {
       alert("Fehler beim Kauf: " + result.error);
     }

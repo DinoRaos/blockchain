@@ -1,8 +1,6 @@
 let provider;
 let connectButton;
 let walletIcon;
-
-// Persistent state keys
 const STATE_KEY = "walletState";
 
 function handleAccountsChanged(accounts) {
@@ -11,7 +9,7 @@ function handleAccountsChanged(accounts) {
     updateUI(null);
     window.location.reload();
   } else {
-    const newAddress = accounts[0];
+    const newAddress = ethers.utils.getAddress(accounts[0]); // Checksummed-Format erzwingen
     persistState(newAddress);
     updateUI(newAddress);
   }
@@ -26,18 +24,13 @@ async function initializeWallet() {
     return;
   }
 
-  // Clear existing listeners
-  const newButton = connectButton.cloneNode(true);
-  connectButton.parentNode.replaceChild(newButton, connectButton);
-  connectButton = newButton;
+  connectButton.hidden = true; // Standardmäßig verstecken
 
-  // Set up listeners
+  connectButton.removeEventListener("click", connectWallet);
   connectButton.addEventListener("click", connectWallet);
 
-  // Check initial state and restore connection
   await checkPersistedState();
 
-  // Set up Ethereum listeners
   if (window.ethereum) {
     window.ethereum.on("accountsChanged", handleAccountsChanged);
     window.ethereum.on("chainChanged", handleChainChanged);
@@ -50,21 +43,23 @@ async function checkPersistedState() {
     if (savedState) {
       const { isConnected, address } = JSON.parse(savedState);
       if (isConnected && address) {
-        // Versuchen Sie, die Wallet-Adresse abzurufen, ohne den Benutzer erneut zu fragen
-        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-        if (accounts.length > 0 && accounts[0].toLowerCase() === address.toLowerCase()) {
-          // Verbindung erfolgreich wiederhergestellt
+        const accounts = await window.ethereum.request({ method: "eth_accounts" });
+        // Vergleiche im Checksummed-Format:
+        if (
+          accounts.length > 0 &&
+          ethers.utils.getAddress(accounts[0]) === ethers.utils.getAddress(address)
+        ) {
           provider = new ethers.providers.Web3Provider(window.ethereum);
           updateUI(address);
-        } else {
-          // Keine Verbindung möglich, Zustand löschen
-          clearPersistedState();
+          return;
         }
       }
     }
+    connectButton.hidden = false; // Zeige den Button, wenn keine Verbindung besteht
   } catch (error) {
     console.error("State restoration failed:", error);
     clearPersistedState();
+    connectButton.hidden = false; // Bei Fehler sicherstellen, dass er angezeigt wird
   }
 }
 
@@ -73,7 +68,9 @@ async function connectWallet() {
     await window.ethereum.request({ method: "eth_requestAccounts" });
     provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
-    const address = await signer.getAddress();
+    // Hole die Adresse im Checksummed-Format:
+    const address = ethers.utils.getAddress(await signer.getAddress());
+    console.log("Current user address (checksummed):", address);
 
     persistState(address);
     updateUI(address);
@@ -87,14 +84,14 @@ async function connectWallet() {
 function persistState(address) {
   const state = {
     isConnected: true,
-    address: address.toLowerCase(),
+    address: address,  // Den originalen Checksummed-Wert speichern
     timestamp: Date.now(),
   };
   localStorage.setItem(STATE_KEY, JSON.stringify(state));
 }
 
 function clearPersistedState() {
-  localStorage.removeItem(STATE_KEY); // Zustand aus dem LocalStorage löschen
+  localStorage.removeItem(STATE_KEY);
   updateUI(null);
 }
 
@@ -102,16 +99,12 @@ async function updateUI(address) {
   let addressDisplay = document.getElementById("addressDisplay");
 
   if (address) {
-    // Wallet ist verbunden: Adresse und ETH-Saldo anzeigen
     if (!addressDisplay) {
       addressDisplay = document.createElement("div");
       addressDisplay.id = "addressDisplay";
       addressDisplay.className = "ms-2 text-light font-monospace";
-      if (connectButton && connectButton.parentNode) {
-        connectButton.parentNode.insertBefore(
-          addressDisplay,
-          connectButton.nextSibling
-        );
+      if (connectButton.parentNode) {
+        connectButton.parentNode.insertBefore(addressDisplay, connectButton.nextSibling);
       }
     }
 
@@ -123,28 +116,20 @@ async function updateUI(address) {
 
     const displayBalance = balance === "0.00" || balance === 0 ? "0" : balance;
 
-    console.log('Address:', address);
-    console.log('Balance:', displayBalance);
-
     addressDisplay.innerHTML = `
       <div style="display: flex; align-items: center; gap: 8px;">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg" width="20">
-          ${address.slice(0, 6)}...${address.slice(-4)}
+        <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg" width="20">
+        ${address.slice(0, 6)}...${address.slice(-4)}
       </div>
       <div style="font-size: 0.8rem; color: #fff; text-align: center; display: flex; align-items: center; gap: 4px;">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/0/01/Ethereum_logo_translucent.svg" width="12">
-          ${displayBalance}
+        <img src="https://upload.wikimedia.org/wikipedia/commons/0/01/Ethereum_logo_translucent.svg" width="12">
+        ${displayBalance}
       </div>
     `;
 
-    if (connectButton) {
-      connectButton.style.display = "none";
-    }
+    connectButton.hidden = true;
   } else {
-    if (connectButton) {
-      connectButton.style.display = "block";
-    }
-
+    connectButton.hidden = false;
     if (addressDisplay) {
       addressDisplay.style.display = "none";
     }
@@ -156,5 +141,4 @@ function handleChainChanged(chainId) {
   window.location.reload();
 }
 
-// Initialize when loaded
 initializeWallet();

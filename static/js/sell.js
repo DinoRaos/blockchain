@@ -1,12 +1,69 @@
+const ETH_PRICE_CACHE_KEY = "ethPrice";
+const CACHE_EXPIRY_TIME = 60000;
+
+async function fetchEthPrice() {
+  const cachedPrice = localStorage.getItem(ETH_PRICE_CACHE_KEY);
+  const cacheTimestamp = localStorage.getItem(ETH_PRICE_CACHE_KEY + "_timestamp");
+
+  if (cachedPrice && cacheTimestamp && Date.now() - cacheTimestamp < CACHE_EXPIRY_TIME) {
+    console.log("Using cached ETH price:", cachedPrice);
+    return parseFloat(cachedPrice);
+  }
+
+  try {
+    const response = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=eur");
+
+    if (!response.ok) {
+      throw new Error(`HTTP Error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    if (data.ethereum && data.ethereum.eur) {
+      const ethPrice = parseFloat(data.ethereum.eur);
+
+      // Cache the price in localStorage
+      localStorage.setItem(ETH_PRICE_CACHE_KEY, ethPrice);
+      localStorage.setItem(ETH_PRICE_CACHE_KEY + "_timestamp", Date.now());
+
+      return ethPrice;
+    }
+  } catch (error) {
+    console.error("Failed to fetch ETH price:", error);
+    return null;
+  }
+}
+
+async function convertEthToFiat() {
+  const ethInput = document.getElementById("itemPrice").value;
+  const ethToFiatDisplay = document.getElementById("ethToFiat");
+  const alertBox = document.getElementById("ethToFiatContainer");
+
+  if (!ethInput || ethInput <= 0) {
+    ethToFiatDisplay.innerText = "~ 0.00 EUR";
+    alertBox.style.display = "none"; // Hide if no input
+    return;
+  }
+
+  const ethPrice = await fetchEthPrice();
+  if (ethPrice !== null) {
+    const convertedPrice = (ethInput * ethPrice).toFixed(2);
+    ethToFiatDisplay.innerText = `~ ${convertedPrice} EUR`;
+    alertBox.style.display = "block"; // Show when valid
+  } else {
+    ethToFiatDisplay.innerText = "~ API Offline";
+    alertBox.style.display = "block";
+  }
+}
+
+// MetaMask Wallet Connection
 async function getMetaMaskAddress() {
   if (typeof window.ethereum !== "undefined") {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     try {
-      // Fordere den Benutzer auf, MetaMask zu verbinden
       await provider.send("eth_requestAccounts", []);
       const signer = provider.getSigner();
       const address = await signer.getAddress();
-      return address; // Gib die Adresse zurück
+      return address;
     } catch (error) {
       console.error("MetaMask-Adresse konnte nicht abgerufen werden:", error);
       return null;
@@ -17,20 +74,38 @@ async function getMetaMaskAddress() {
   }
 }
 
-document
-  .getElementById("sellForm")
-  .addEventListener("submit", async function (event) {
-    event.preventDefault();
+// Assign MetaMask address to form before submission
+document.getElementById("sellForm").addEventListener("submit", async function (event) {
+  event.preventDefault();
 
-    // Hole die MetaMask-Adresse
-    const address = await getMetaMaskAddress();
-    if (address) {
-      // Setze die Adresse in das versteckte Formularfeld
-      document.getElementById("sellerAddress").value = address;
+  const address = await getMetaMaskAddress();
+  if (address) {
+    document.getElementById("sellerAddress").value = address;
+    this.submit();
+  } else {
+    alert("Bitte verbinden Sie sich mit MetaMask, um fortzufahren.");
+  }
+});
 
-      // Sende das Formular manuell ab
-      this.submit();
-    } else {
-      alert("Bitte verbinden Sie sich mit MetaMask, um fortzufahren.");
-    }
-  });
+// Image Preview on Upload
+document.getElementById("itemImage").addEventListener("change", function (event) {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      document.getElementById("imagePreview").src = e.target.result;
+      document.getElementById("imagePreviewContainer").classList.remove("d-none");
+    };
+    reader.readAsDataURL(file);
+  }
+});
+
+
+// Initialize Bootstrap Tooltips
+document.addEventListener("DOMContentLoaded", function () {
+  new bootstrap.Tooltip(document.getElementById("ethInfoBtn"));
+  fetchEthPrice();
+});
+
+// Update EUR conversion when ETH input changes
+document.getElementById("itemPrice").addEventListener("input", convertEthToFiat);

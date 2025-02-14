@@ -1,30 +1,34 @@
 const fs = require("fs");
 const path = require("path");
 
-async function main() {
-  console.log("Deploying Marketplace...");
+// Importiere das Artifakt des MarketplacePayment Contracts
+const MarketplacePaymentArtifact = require("../artifacts/contracts/MarketplacePayment.sol/MarketplacePayment.json");
 
-  // Hole die Contract Factory
-  const Marketplace = await ethers.getContractFactory("Marketplace");
+async function main() {
+  console.log("Deploying MarketplacePayment...");
+
+  // Hole die Contract Factory für MarketplacePayment
+  const MarketplacePayment = await ethers.getContractFactory("MarketplacePayment");
 
   // Deploye den Contract
-  const marketplace = await Marketplace.deploy();
+  const marketplacePayment = await MarketplacePayment.deploy();
 
   // Warte, bis der Contract deployed ist
-  await marketplace.deployed();
+  await marketplacePayment.deployed();
 
-  console.log("Marketplace deployed to:", marketplace.address);
+  console.log("MarketplacePayment deployed to:", marketplacePayment.address);
 
-  // Erstelle ein Konfigurationsobjekt
+  // Erstelle ein Konfigurationsobjekt mit Adresse und ABI
   const config = {
-    contractAddress: marketplace.address
+    contractAddress: marketplacePayment.address,
+    abi: MarketplacePaymentArtifact.abi,
   };
 
-  // Schreibe die Konfiguration in eine Datei (z. B. in den übergeordneten Ordner, wo auch dein Frontend darauf zugreifen kann)
-  const configPath = path.join(__dirname, "..", "deployedAddress.json");
+  // Schreibe die Konfiguration in den static-Ordner, damit dein Frontend sie laden kann
+  const configPath = path.join(__dirname, "..", "static", "deployedAddress.json");
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 
-  console.log("Contract address written to deployedAddress.json");
+  console.log("Contract address and ABI written to static/deployedAddress.json");
 }
 
 main()

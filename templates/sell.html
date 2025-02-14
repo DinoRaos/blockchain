@@ -1,88 +1,81 @@
 <!DOCTYPE html>
 <html lang="de">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Verkaufen - BlockBazaar</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      href="{{ url_for('static', filename='css/style.css') }}"
-    />
-  </head>
-  <body>
-    {% include 'navbar.html' %}
 
-    <section id="sell" class="py-5 bg-light">
-      <div class="container">
-        <h2 class="mb-4">Gegenstand verkaufen</h2>
+<head>
+  <meta charset="UTF-8" />
+  <title>Verkaufen - BlockBazaar</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet" />
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" />
+  <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" />
+</head>
 
-        <form
-          id="sellForm"
-          enctype="multipart/form-data"
-          method="POST"
-          action="{{ url_for('offer') }}"
-        >
-          <div class="mb-3">
-            <label for="itemName" class="form-label"
-              >Name des Gegenstandes</label
-            >
-            <input
-              type="text"
-              class="form-control"
-              id="itemName"
-              name="itemName"
-              required
-            />
+<body>
+  {% include 'navbar.html' %}
+
+  <section id="sell" class="py-5 bg-light">
+    <div class="container">
+      <h2 class="mb-4">Gegenstand verkaufen</h2>
+
+      <form id="sellForm" enctype="multipart/form-data" method="POST" action="{{ url_for('offer') }}">
+        <div class="mb-3">
+          <label for="itemName" class="form-label">Name des Gegenstandes</label>
+          <input type="text" class="form-control" id="itemName" name="itemName" required />
+        </div>
+
+        <div class="mb-3">
+          <label for="itemDescription" class="form-label">Beschreibung</label>
+          <textarea class="form-control" id="itemDescription" name="itemDescription" required></textarea>
+        </div>
+
+        <div class="mb-3">
+          <label for="itemPrice" class="form-label">Preis in ETH</label>
+          <div class="input-group">
+            <input type="number" step="0.0001" class="form-control" id="itemPrice" name="itemPrice" min="0" required />
+            <span class="input-group-text">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/0/01/Ethereum_logo_translucent.svg" alt="ETH"
+                class="eth-icon" width="16" />
+            </span>
+            <span class="input-group-text" id="ethInfoBtn" data-bs-toggle="tooltip" data-bs-placement="right"
+              title="Die Umrechnung basiert auf dem aktuellen Ethereum-Wechselkurs von CoinGecko.">
+              <i class="bi bi-info-circle"></i>
+            </span>
           </div>
-          <div class="mb-3">
-            <label for="itemDescription" class="form-label">Beschreibung</label>
-            <textarea
-              class="form-control"
-              id="itemDescription"
-              name="itemDescription"
-              required
-            ></textarea>
-          </div>
-          <div class="mb-3">
-            <label for="itemPrice" class="form-label">Preis in ETH</label>
-            <input
-              type="number"
-              step="0.0001"
-              class="form-control"
-              id="itemPrice"
-              name="itemPrice"
-              required
-            />
-          </div>
-          <div class="mb-3">
-            <label for="itemImage" class="form-label">Bild hochladen</label>
-            <input
-              type="file"
-              class="form-control"
-              id="itemImage"
-              name="itemImage"
-              required
-            />
-          </div>
-          <input
-            type="hidden"
-            id="sellerAddress"
-            name="sellerAddress"
-            value=""
-          />
+        </div>
 
-          <button type="submit" class="btn btn-success">
-            Angebot erstellen
-          </button>
-        </form>
+        <!-- Styled EUR Price Display -->
+        <div id="ethToFiatContainer" class="alert alert-info mt-2">
+          <strong>Geschätzter Preis:</strong> <span id="ethToFiat">~ 0.00 EUR</span>
+        </div>
 
-        {% if message %}
-        <div class="alert alert-{{ message_type }} mt-4">{{ message }}</div>
-        {% endif %}
-      </div>
-    </section>
+        <div class="mb-3">
+          <label for="itemImage" class="form-label">Bild hochladen</label>
+          <input type="file" class="form-control" id="itemImage" name="itemImage" required />
+          <!-- Image Preview Without Outer Box -->
+          <div id="imagePreviewContainer" class="text-center d-none mt-2">
+            <img id="imagePreview" class="img-thumbnail rounded shadow-sm border-0" alt="Bildvorschau"
+              style="max-width: 120px;" />
+          </div>
+        </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
-    <script src="{{ url_for('static', filename='js/sell.js') }}"></script>
-  </body>
+        <input type="hidden" id="sellerAddress" name="sellerAddress" value="" />
+
+        <button type="submit" class="btn btn-success w-100">
+          Angebot erstellen
+        </button>
+      </form>
+
+      {% if message %}
+      <div class="alert alert-{{ message_type }} mt-4">{{ message }}</div>
+      {% endif %}
+    </div>
+  </section>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{{ url_for('static', filename='js/sell.js') }}"></script>
+</body>
+
 </html>

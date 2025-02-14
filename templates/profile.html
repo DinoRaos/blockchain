@@ -1,156 +1,118 @@
-<!-- templates/profile.html -->
 <!DOCTYPE html>
 <html lang="de">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Profil - BlockBazaar</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link
-      href="{{ url_for('static', filename='css/style.css') }}"
-      rel="stylesheet"
-    />
-  </head>
-  <body>
-    {% include 'navbar.html' %}
 
-    <section id="profile" class="py-5">
-      <div class="container">
-        <h2 class="mb-4">Mein Profil</h2>
-        <!-- Container, in den später die dynamisch generierten Inhalte eingefügt werden -->
-        <div id="profileContainer">
-          <p>Lade Profil...</p>
-        </div>
+<head>
+  <meta charset="UTF-8" />
+  <title>Profil - BlockBazaar</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" />
+
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet" />
+  <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" />
+</head>
+
+<body>
+  {% include 'navbar.html' %}
+
+  <section id="profile" class="py-5">
+    <div class="container">
+      <h2 class="mb-4">Mein Profil</h2>
+      <div id="profileContainer">
+        <div id="profileContainer" class="text-center">
+          <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>        
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- ethers.js einbinden -->
-    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-      document.addEventListener("DOMContentLoaded", async () => {
-        if (window.ethereum) {
-          try {
-            // Zugang zu MetaMask anfragen
-            await window.ethereum.request({ method: "eth_requestAccounts" });
-            const provider = new ethers.providers.Web3Provider(window.ethereum);
-            const signer = provider.getSigner();
-            const userAddress = await signer.getAddress();
+  <!-- Modal für Artikel bearbeiten -->
+  <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <!-- Dunkler Header mit weißer Schrift & zentriertem Titel -->
+        <div class="modal-header bg-dark text-white">
+          <h5 class="modal-title w-100 text-center" id="editModalLabel">
+            <strong>Artikel bearbeiten</strong>
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+            aria-label="Schließen"></button>
+        </div>
 
-            // API-Aufruf an den Endpunkt /api/profile
-            const response = await fetch("/api/profile", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ user_address: userAddress }),
-            });
+        <form id="editItemForm" enctype="multipart/form-data" method="POST">
+          <div class="modal-body">
+            <!-- Verstecktes Feld für die Artikel-ID -->
+            <input type="hidden" id="editItemId" name="itemId" />
 
-            if (!response.ok) {
-              throw new Error("Fehler beim Abrufen der Profildaten");
-            }
+            <div class="mb-3">
+              <label for="editItemName" class="form-label">Name des Gegenstandes</label>
+              <input type="text" class="form-control" id="editItemName" name="itemName" required />
+            </div>
 
-            const data = await response.json();
-            renderProfile(data);
-          } catch (err) {
-            console.error("Fehler:", err);
-            document.getElementById("profileContainer").innerHTML =
-              "<p>Fehler beim Laden des Profils.</p>";
-          }
-        } else {
-          alert("Kein Ethereum-Provider gefunden. Bitte installiere MetaMask.");
-        }
-      });
+            <div class="mb-3">
+              <label for="editItemDescription" class="form-label">Beschreibung</label>
+              <textarea class="form-control" id="editItemDescription" name="itemDescription" required></textarea>
+            </div>
 
-      function renderProfile(data) {
-        // Erstelle HTML für Verkäufe mit Status-Badge
-        let salesHTML = data.sales
-          .map(
-            (sale, index) => `
-          <div class="accordion-item">
-            <h2 class="accordion-header">
-              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#saleCollapse${index}">
-                ${sale.name} 
-                ${
-                  sale.status === "sold"
-                    ? '<span class="badge bg-danger ms-2">Verkauft</span>'
-                    : '<span class="badge bg-success ms-2">Verfügbar</span>'
-                }
-              </button>
-            </h2>
-            <div id="saleCollapse${index}" class="accordion-collapse collapse">
-              <div class="accordion-body">
-                <div class="row">
-                  <div class="col-md-4">
-                    <img src="${sale.image_url}" class="img-fluid" alt="${
-              sale.name
-            }" />
-                  </div>
-                  <div class="col-md-8">
-                    <h5>${sale.name}</h5>
-                    <p>${sale.description}</p>
-                    <p><strong>Preis:</strong> ${sale.price_eth} ETH</p>
-                  </div>
-                </div>
+            <div class="mb-3">
+              <label for="editItemPrice" class="form-label">Preis in ETH</label>
+              <div class="input-group">
+                <input type="number" step="0.0001" class="form-control" id="editItemPrice" name="itemPrice" min="0"
+                  required />
+                <span class="input-group-text">
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/0/01/Ethereum_logo_translucent.svg" alt="ETH"
+                    class="eth-icon" width="16" />
+                </span>
+                <span class="input-group-text" id="editEthInfoBtn" data-bs-toggle="tooltip" data-bs-placement="right"
+                  title="Die Umrechnung basiert auf dem aktuellen Ethereum-Wechselkurs von CoinGecko.">
+                  <i class="bi bi-info-circle"></i>
+                </span>
               </div>
             </div>
+
+            <!-- Styled EUR Price Display (wie in sell.html) -->
+            <div id="editEthToFiatContainer" class="alert alert-info mt-2" style="display: none;">
+              <strong>Geschätzter Preis:</strong> <span id="editEthToFiat">~ 0.00 EUR</span>
+            </div>
+
+            <div class="mb-3">
+              <label for="editItemImage" class="form-label">Neues Bild (optional)</label>
+              <input type="file" class="form-control" id="editItemImage" name="itemImage" />
+              <div id="editImagePreviewContainer" class="text-center d-none mt-2">
+                <img id="editImagePreview" class="img-thumbnail rounded shadow-sm border-0" alt="Bildvorschau"
+                  style="max-width: 120px;" />
+              </div>
+            </div>
+
+            <!-- Verkäuferadresse -->
+            <input type="hidden" id="editSellerAddress" name="sellerAddress" value="" />
           </div>
-        `
-          )
-          .join("");
+          <div class="modal-footer">
+            <!-- Endgültig löschen -->
+            <button type="button" class="btn btn-outline-danger me-auto" id="deleteItemBtn">
+              Endgültig löschen
+            </button>
 
-        // Erstelle HTML für Käufe – hier könntest du ähnlich Badges einfügen, falls gewünscht
-        let purchasesHTML = data.purchases
-          .map(
-            (purchase, index) => `
-          <div class="accordion-item">
-            <h2 class="accordion-header">
-              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#purchaseCollapse${index}">
-                ${purchase.name}
-              </button>
-            </h2>
-            <div id="purchaseCollapse${index}" class="accordion-collapse collapse">
-              <div class="accordion-body">
-                <div class="row">
-                  <div class="col-md-4">
-                    <img src="${purchase.image_url}" class="img-fluid" alt="${purchase.name}" />
-                  </div>
-                  <div class="col-md-8">
-                    <h5>${purchase.name}</h5>
-                    <p>${purchase.description}</p>
-                    <p><strong>Preis:</strong> ${purchase.price_eth} ETH</p>
-                    <p><strong>Verkäufer:</strong> ${purchase.seller_address}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              Abbrechen
+            </button>
+            <button type="submit" class="btn btn-success">
+              Änderungen speichern
+            </button>
           </div>
-        `
-          )
-          .join("");
+        </form>
+      </div>
+    </div>
+  </div>
 
-        // Gesamtes HTML zusammenbauen
-        let html = `
-          <div class="row">
-            <div class="col-md-6">
-              <h4>Verkäufe</h4>
-              <div class="accordion" id="salesAccordion">
-                ${salesHTML}
-              </div>
-            </div>
-            <div class="col-md-6">
-              <h4>Käufe</h4>
-              <div class="accordion" id="purchasesAccordion">
-                ${purchasesHTML}
-              </div>
-            </div>
-          </div>
-        `;
-        document.getElementById("profileContainer").innerHTML = html;
-      }
-    </script>
-  </body>
+  <!-- ethers.js + Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Dein Profil-spezifisches JS -->
+  <script src="{{ url_for('static', filename='js/profile.js') }}"></script>
+</body>
+
 </html>
